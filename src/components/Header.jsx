@@ -60,7 +60,6 @@ export default function Header({ initialUser }) {
             </p>
 
             <div className="menu">
-              ...
               <ul>
                 <li>{user.displayName}</li>
 
