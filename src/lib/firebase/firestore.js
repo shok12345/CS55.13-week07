@@ -35,21 +35,56 @@ export async function updateRestaurantImageReference(
   }
 }
 
-// Helper function to update restaurant rating statistics within a transaction
 const updateWithRating = async (
-  transaction, // The Firestore transaction object
-  docRef, // Reference to the restaurant document
-  newRatingDocument, // The new rating document to add
-  review // The review data containing the rating
+  transaction,
+  docRef,
+  newRatingDocument,
+  review
 ) => {
-  // Currently not implemented - returns without doing anything
-  return;
+  const restaurant = await transaction.get(docRef);
+  const data = restaurant.data();
+  const newNumRatings = data?.numRatings ? data.numRatings + 1 : 1;
+  const newSumRating = (data?.sumRating || 0) + Number(review.rating);
+  const newAverage = newSumRating / newNumRatings;
+
+  transaction.update(docRef, {
+    numRatings: newNumRatings,
+    sumRating: newSumRating,
+    avgRating: newAverage,
+  });
+
+  transaction.set(newRatingDocument, {
+    ...review,
+    timestamp: Timestamp.fromDate(new Date()),
+  });
 };
 
-// Function to add a review to a restaurant (currently not implemented)
 export async function addReviewToRestaurant(db, restaurantId, review) {
-  // Currently not implemented - returns without doing anything
-  return;
+  if (!restaurantId) {
+          throw new Error("No restaurant ID has been provided.");
+  }
+
+  if (!review) {
+          throw new Error("A valid review has not been provided.");
+  }
+
+  try {
+          const docRef = doc(collection(db, "restaurants"), restaurantId);
+          const newRatingDocument = doc(
+                  collection(db, `restaurants/${restaurantId}/ratings`)
+          );
+
+          // corrected line
+          await runTransaction(db, transaction =>
+                  updateWithRating(transaction, docRef, newRatingDocument, review)
+          );
+  } catch (error) {
+          console.error(
+                  "There was an error adding the rating to the restaurant",
+                  error
+          );
+          throw error;
+  }
 }
 
 // Helper function to apply filters and sorting to a Firestore query
