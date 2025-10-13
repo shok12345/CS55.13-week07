@@ -20,8 +20,7 @@ export async function GeminiSummary({ restaurantId }) {
     Here are the reviews: ${reviews.map((review) => review.text).join(reviewSeparator)}
   `;
 
-console.log('g api key...');
-console.log(process.env.GEMINI_API_KEY);
+
 
   try {
     if (!process.env.GEMINI_API_KEY) {
@@ -31,6 +30,9 @@ console.log(process.env.GEMINI_API_KEY);
         'GEMINI_API_KEY not set. Set it with "firebase apphosting:secrets:set GEMINI_API_KEY"'
       );
     }
+
+
+console.log(prompt);
 
     // Configure a Genkit instance.
     const ai = genkit({
